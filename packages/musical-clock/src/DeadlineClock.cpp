@@ -1,8 +1,25 @@
 #include "DeadlineClock.h"
 
-void DeadlineClock::begin(uint64_t now_us) {
+namespace {
+
+// Convert a duration from an old cycle length to a new one while preserving
+// its proportion within the cycle. The old interval is the denominator and
+// also supplies the rounding unit.
+uint64_t scaleDurationPreservingRatio(uint64_t duration_us,
+                                      uint64_t old_interval_us,
+                                      uint64_t new_interval_us) {
+  return (duration_us * new_interval_us + old_interval_us / 2) /
+         old_interval_us;
+}
+
+}  // namespace
+
+bool DeadlineClock::begin(uint64_t now_us, uint64_t interval_us) {
+  if (interval_us == 0) return false;
+  interval_us_ = interval_us;
   next_deadline_us_ = now_us + interval_us_;
-  started_ = interval_us_ != 0;
+  started_ = true;
+  return true;
 }
 
 ClockAdvance DeadlineClock::poll(uint64_t now_us) {
@@ -19,8 +36,31 @@ ClockAdvance DeadlineClock::poll(uint64_t now_us) {
   return {elapsed_events, next_deadline_us_};
 }
 
-bool DeadlineClock::setInterval(uint64_t interval_us) {
-  if (interval_us == 0) return false;
-  interval_us_ = interval_us;
+bool DeadlineClock::reschedule(uint64_t now_us, uint64_t interval_us,
+                                IntervalChangePolicy policy) {
+  if (!started_ || interval_us == 0) return false;
+
+  switch (policy) {
+    case IntervalChangePolicy::PreservePhase: {
+      const uint64_t old_interval_us = interval_us_;
+      const uint64_t new_interval_us = interval_us;
+      const uint64_t remaining_us = next_deadline_us_ > now_us
+                                        ? next_deadline_us_ - now_us
+                                        : 0;
+      const uint64_t rescheduled_remaining_us =
+          scaleDurationPreservingRatio(remaining_us, old_interval_us,
+                                        new_interval_us);
+      interval_us_ = interval_us;
+      next_deadline_us_ = now_us + rescheduled_remaining_us;
+      break;
+    }
+    case IntervalChangePolicy::ResetFromNow:
+      interval_us_ = interval_us;
+      next_deadline_us_ = now_us + interval_us_;
+      break;
+    case IntervalChangePolicy::KeepCurrentDeadline:
+      interval_us_ = interval_us;
+      break;
+  }
   return true;
 }

@@ -14,6 +14,12 @@ struct ClockAdvance {
   uint64_t next_deadline_us = 0;
 };
 
+enum class IntervalChangePolicy : uint8_t {
+  PreservePhase,
+  ResetFromNow,
+  KeepCurrentDeadline,
+};
+
 /**
  * Small, platform-independent interval scheduler.
  *
@@ -22,25 +28,27 @@ struct ClockAdvance {
  * not read hardware time, sleep, trigger callbacks, or know about musical
  * concepts such as beats, bars, BPM, or MIDI pulses.
  *
- * Deadlines are represented in integer microseconds. When a poll arrives late,
+ * Deadlines are represented in integer microseconds. The first interval is
+ * supplied to `begin()`; later interval changes use `reschedule()` with an
+ * explicit physical scheduling policy. When a poll arrives late,
  * all elapsed intervals are reported and the next deadline advances from its
  * previous absolute value rather than from the poll time. Musical policies
  * such as applying a tempo change on the next beat belong above this layer.
  */
 class DeadlineClock {
  public:
-  explicit DeadlineClock(uint64_t interval_us) : interval_us_(interval_us) {}
+  [[nodiscard]] bool begin(uint64_t now_us, uint64_t interval_us);
 
-  void begin(uint64_t now_us);
-  ClockAdvance poll(uint64_t now_us);
-  bool setInterval(uint64_t interval_us);
+  [[nodiscard]] ClockAdvance poll(uint64_t now_us);
+  [[nodiscard]] bool reschedule(uint64_t now_us, uint64_t interval_us,
+                                IntervalChangePolicy policy);
 
   uint64_t interval() const { return interval_us_; }
   uint64_t nextDeadline() const { return next_deadline_us_; }
   bool started() const { return started_; }
 
  private:
-  uint64_t interval_us_;
+  uint64_t interval_us_ = 0;
   uint64_t next_deadline_us_ = 0;
   bool started_ = false;
 };

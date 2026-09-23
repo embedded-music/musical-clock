@@ -20,4 +20,7 @@ just test
 ```
 
 The host tests cover deadline boundaries, catch-up, drift-free scheduling, and
-invalid intervals.
+invalid intervals. They also cover large tempo changes in both directions and
+changes at an already elapsed deadline. One of those tests exposed and fixed a
+rounding detail in proportional rescheduling: rounding must use half of the
+old interval, which is the denominator of the conversion.
