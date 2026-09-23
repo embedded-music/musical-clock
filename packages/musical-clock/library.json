@@ -1,0 +1,14 @@
+{
+  "$schema": "https://raw.githubusercontent.com/platformio/platformio-core/develop/platformio/assets/schema/library.json",
+  "name": "musical-clock",
+  "version": "0.1.0",
+  "description": "Monotonic deadline clock for embedded music experiments",
+  "keywords": ["music", "clock", "sequencer", "metronome", "midi"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/embedded-music/musical-clock.git"
+  },
+  "frameworks": "*",
+  "platforms": "*",
+  "headers": ["DeadlineClock.h"]
+}
