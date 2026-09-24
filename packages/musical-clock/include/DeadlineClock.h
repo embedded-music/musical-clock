@@ -5,12 +5,14 @@
 /**
  * Result returned after polling a DeadlineClock.
  *
- * `elapsed_events` counts every interval whose absolute deadline has passed
- * since the previous poll. `next_deadline_us` remains on the original
- * schedule, so delayed polling does not accumulate drift.
+ * `elapsed_intervals` counts every interval whose absolute deadline has
+ * passed since the previous poll. `next_deadline_us` remains on the original
+ * schedule, so delayed polling does not accumulate drift. Consumers decide
+ * whether overdue musical/audio events are discarded or represented another
+ * way; this physical clock never emits callbacks or sound.
  */
 struct ClockAdvance {
-  uint32_t elapsed_events = 0;
+  uint32_t elapsed_intervals = 0;
   uint64_t next_deadline_us = 0;
 };
 

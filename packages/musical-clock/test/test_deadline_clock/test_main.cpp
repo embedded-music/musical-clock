@@ -6,9 +6,9 @@ void test_clock_reports_one_event_at_deadline() {
   DeadlineClock clock;
   TEST_ASSERT_TRUE(clock.begin(1000, 500000));
 
-  TEST_ASSERT_EQUAL_UINT32(0, clock.poll(500999).elapsed_events);
+  TEST_ASSERT_EQUAL_UINT32(0, clock.poll(500999).elapsed_intervals);
   const ClockAdvance advance = clock.poll(501000);
-  TEST_ASSERT_EQUAL_UINT32(1, advance.elapsed_events);
+  TEST_ASSERT_EQUAL_UINT32(1, advance.elapsed_intervals);
   TEST_ASSERT_EQUAL_UINT64(1001000, advance.next_deadline_us);
 }
 
@@ -17,7 +17,7 @@ void test_clock_catches_up_without_drift() {
   TEST_ASSERT_TRUE(clock.begin(0, 100));
 
   const ClockAdvance advance = clock.poll(550);
-  TEST_ASSERT_EQUAL_UINT32(5, advance.elapsed_events);
+  TEST_ASSERT_EQUAL_UINT32(5, advance.elapsed_intervals);
   TEST_ASSERT_EQUAL_UINT64(600, advance.next_deadline_us);
 }
 
@@ -27,8 +27,8 @@ void test_interval_change_keeps_absolute_schedule() {
 
   TEST_ASSERT_TRUE(clock.reschedule(500, 500,
                                     IntervalChangePolicy::PreservePhase));
-  TEST_ASSERT_EQUAL_UINT32(0, clock.poll(749).elapsed_events);
-  TEST_ASSERT_EQUAL_UINT32(1, clock.poll(750).elapsed_events);
+  TEST_ASSERT_EQUAL_UINT32(0, clock.poll(749).elapsed_intervals);
+  TEST_ASSERT_EQUAL_UINT32(1, clock.poll(750).elapsed_intervals);
   TEST_ASSERT_EQUAL_UINT64(1250, clock.nextDeadline());
 }
 
@@ -71,7 +71,7 @@ void test_preserve_phase_at_or_after_deadline_triggers_immediately() {
   TEST_ASSERT_TRUE(clock.reschedule(1000, 500,
                                     IntervalChangePolicy::PreservePhase));
   TEST_ASSERT_EQUAL_UINT64(1000, clock.nextDeadline());
-  TEST_ASSERT_EQUAL_UINT32(1, clock.poll(1000).elapsed_events);
+  TEST_ASSERT_EQUAL_UINT32(1, clock.poll(1000).elapsed_intervals);
   TEST_ASSERT_EQUAL_UINT64(1500, clock.nextDeadline());
 }
 

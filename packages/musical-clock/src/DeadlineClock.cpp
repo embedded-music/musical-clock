@@ -29,11 +29,11 @@ ClockAdvance DeadlineClock::poll(uint64_t now_us) {
 
   const uint64_t overdue_us = now_us - next_deadline_us_;
   const uint64_t elapsed = overdue_us / interval_us_ + 1;
-  const uint32_t elapsed_events = elapsed > UINT32_MAX
-                                      ? UINT32_MAX
-                                      : static_cast<uint32_t>(elapsed);
+  const uint32_t elapsed_intervals = elapsed > UINT32_MAX
+                                         ? UINT32_MAX
+                                         : static_cast<uint32_t>(elapsed);
   next_deadline_us_ += elapsed * interval_us_;
-  return {elapsed_events, next_deadline_us_};
+  return {elapsed_intervals, next_deadline_us_};
 }
 
 bool DeadlineClock::reschedule(uint64_t now_us, uint64_t interval_us,
