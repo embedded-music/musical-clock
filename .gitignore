@@ -1,4 +1,5 @@
 **/.pio/
 **/.platformio/
 .platformio-home/
+.env
 .vscode/

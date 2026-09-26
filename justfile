@@ -1,4 +1,4 @@
-set dotenv-load := false
+set dotenv-load := true
 
 default:
     @just --list
